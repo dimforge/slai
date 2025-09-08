@@ -1,0 +1,47 @@
+[workspace]
+members = [
+    "crates/slai",
+#    "crates/slai-bench",
+    "crates/slai-chat",
+    "crates/slai-chat"
+]
+resolver = "2"
+
+[workspace.dependencies]
+nalgebra = { version = "0.34.0", features = ["convert-bytemuck"] }
+wgpu = { version = "26", features = ["naga-ir"] }
+bytemuck = { version = "1", features = ["derive"] }
+anyhow = "1"
+async-channel = "2"
+thiserror = "1"
+
+encase = { version = "0.11.0", features = ["nalgebra"] }
+
+[workspace.lints]
+rust.unexpected_cfgs = { level = "warn", check-cfg = [
+    'cfg(feature, values("dim2", "dim3"))'
+] }
+
+[profile.release]
+opt-level = 'z'
+
+[profile.wasm-dev]
+inherits = "dev"
+opt-level = 1
+
+[profile.server-dev]
+inherits = "dev"
+
+[profile.android-dev]
+inherits = "dev"
+
+[patch.crates-io]
+slang-hal-derive = { path = "../slang-hal/crates/slang-hal-derive" }
+slang-hal = { path = "../slang-hal/crates/slang-hal" }
+minislang = { path = "../slang-hal/crates/minislang" }
+stensor = { path = "../stensor" }
+#encase = { path = "../encase" }
+#shader-slang = { path = "../slang-rs" }
+#slcore-derive = { git = "https://github.com/dimforge/slmath", rev = "95538845080ef8680cf9906f1949623e30be3495" }
+#slcore = { git = "https://github.com/dimforge/slmath", rev = "95538845080ef8680cf9906f1949623e30be3495" }
+#stensor = { git = "https://github.com/dimforge/slmath", rev = "95538845080ef8680cf9906f1949623e30be3495" }

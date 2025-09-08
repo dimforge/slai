@@ -1,0 +1,56 @@
+[package]
+name = "slai-chat"
+version = "0.1.0"
+authors = ["Sébastien Crozet <sebcrozet@dimforge.com>"]
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[features]
+default = ["web"]
+web = ["dioxus/web"]
+desktop = ["dioxus/desktop"]
+mobile = ["dioxus/mobile"]
+cuda = [ "slai/cuda" ]
+
+[dependencies]
+slang-hal = "0.1"
+slai = {  version = "0.1", path = "../slai" }
+
+nalgebra = "0.34"
+async-channel = "2"
+async-trait = "0.1"
+anyhow = "1"
+async-std = { version = "1", features = ["attributes"] }
+minijinja = "2.5"
+llm-samplers = "0.0.7"
+rand = { version = "0.8", features = ["getrandom"] }
+web-time = "1.1.0"
+wgpu = "26"
+
+
+# UI
+dioxus = { version = "0.6.0", features = [] }
+dioxus-markdown = "0.0.1"
+rfd = { version = "0.15", features = ["file-handle-inner"] }
+log = "0.4.19"
+base64 = "0.22"
+
+# CLI
+clap = { version = "4", features = ["derive"] }
+regex = "1.11.1"
+futures-util = "0.3"
+
+# For multimodal
+image = "0.25"
+
+[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
+tracing-subscriber = "0.3"
+futures = "0.3.28"
+memmap2 = "0.9.4"
+colored = "3.0.0"
+
+# web:
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+wasm-bindgen-futures = "0.4"
+
