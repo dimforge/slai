@@ -36,12 +36,12 @@ inherits = "dev"
 inherits = "dev"
 
 [patch.crates-io]
-slang-hal-derive = { path = "../slang-hal/crates/slang-hal-derive" }
-slang-hal = { path = "../slang-hal/crates/slang-hal" }
-minislang = { path = "../slang-hal/crates/minislang" }
-stensor = { path = "../stensor" }
-#encase = { path = "../encase" }
-#shader-slang = { path = "../slang-rs" }
-#slcore-derive = { git = "https://github.com/dimforge/slmath", rev = "95538845080ef8680cf9906f1949623e30be3495" }
-#slcore = { git = "https://github.com/dimforge/slmath", rev = "95538845080ef8680cf9906f1949623e30be3495" }
-#stensor = { git = "https://github.com/dimforge/slmath", rev = "95538845080ef8680cf9906f1949623e30be3495" }
+minislang = { git = "https://github.com/dimforge/slang-hal", rev = "77711e8ffd0bc3ed7a0106ce59c8a4b15b81a464" }
+slang-hal-derive = { git = "https://github.com/dimforge/slang-hal", rev = "77711e8ffd0bc3ed7a0106ce59c8a4b15b81a464" }
+slang-hal = { git = "https://github.com/dimforge/slang-hal", rev = "77711e8ffd0bc3ed7a0106ce59c8a4b15b81a464" }
+stensor = { git = "https://github.com/dimforge/stensor", rev = "f709a7ed7c3682ec5fa618f89ef33eb9f7138f08" }
+
+#slang-hal-derive = { path = "../slang-hal/crates/slang-hal-derive" }
+#slang-hal = { path = "../slang-hal/crates/slang-hal" }
+#minislang = { path = "../slang-hal/crates/minislang" }
+#stensor = { path = "../stensor" }
