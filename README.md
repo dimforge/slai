@@ -1,4 +1,4 @@
-# slai − GPU local inference every platform
+# slai − on-device GPU LLM inference on every platform
 
 <p align="center">
   <img src="./crates/slai-chat/assets/slai-logo.png" alt="crates.io" height="200px">
@@ -20,8 +20,7 @@ Aside from the library, two binary crates are provided:
 - **slai-bench** is a basic benchmarking utility for measuring calculation times for matrix multiplication with various
   quantization formats.
 - **slai-chat** is a basic chat GUI application for loading GGUF files and chat with the model. It can be run natively
-  or on the browser. Check out its [README](./crates/slai-chat/README.md) for details on how to run it. You can run
-  it from your browser with the [online demo](https://slmath.rs/demos/slai/index.html).
+  or on the browser. Check out its [README](./crates/slai-chat/README.md) for details on how to run it.
 
 ⚠️ **slai** is still under heavy development and might be lacking some important features. Contributions  are welcome!
 
