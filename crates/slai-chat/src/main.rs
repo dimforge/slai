@@ -24,7 +24,9 @@ mod sampler;
 mod cli;
 mod segment_anything;
 
-// pub type SelectedBackend = slang_hal::cuda::Cuda;
+#[cfg(feature = "cuda")]
+pub type SelectedBackend = slang_hal::backend::Cuda;
+#[cfg(not(feature = "cuda"))]
 pub type SelectedBackend = WebGpu;
 
 #[derive(Copy, Clone)]
@@ -140,9 +142,9 @@ async fn init_wgpu() -> anyhow::Result<GpuInstanceCtx<WebGpu>> {
 }
 
 #[cfg(feature = "cuda")]
-async fn init_cuda() -> anyhow::Result<GpuInstanceCtx<slang_hal::cuda::Cuda>> {
+async fn init_cuda() -> anyhow::Result<GpuInstanceCtx<slang_hal::backend::Cuda>> {
     println!("loading cuda");
-    let res = Ok::<_, anyhow::Error>(GpuInstanceCtx::new(slang_hal::cuda::Cuda::new()?));
+    let res = Ok::<_, anyhow::Error>(GpuInstanceCtx::new(slang_hal::backend::Cuda::new()?));
     println!("Loaded cuda");
     res
 }
@@ -159,7 +161,7 @@ fn App() -> Element {
     match (&*gpu_wgpu.read_unchecked(), &*gpu_cuda.read_unchecked()) {
         (Some(Ok(gpu_wgpu)), Some(Ok(gpu_cuda))) => {
             use_context_provider(|| gpu_wgpu.clone());
-            use_context_provider(|| *gpu_cuda);
+            use_context_provider(|| gpu_cuda.clone());
             use_context_provider(|| LoadedModelSignal::new(None));
             use_context_provider(|| Signal::new(PromptState::default()));
 

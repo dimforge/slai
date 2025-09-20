@@ -124,7 +124,7 @@ mod test {
     use wgpu::{BufferUsages, Features, Limits};
 
     #[cfg(feature = "cuda")]
-    use slang_hal::cuda::Cuda;
+    use slang_hal::backend::Cuda;
 
     #[cfg(feature = "cuda")]
     #[futures_test::test]
