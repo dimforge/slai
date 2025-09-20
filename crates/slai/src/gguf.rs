@@ -13,9 +13,9 @@ use bytemuck::{Pod, PodCastError};
 use log::info;
 use nalgebra::DMatrix;
 use slang_hal::backend::Backend;
+use std::collections::HashMap;
 use stensor::shapes::MatrixOrdering;
 use stensor::tensor::GpuTensor;
-use std::collections::HashMap;
 use wgpu::BufferUsages;
 
 const GGUF_FILE_MAGIC_LE: u32 = 0x46554747; // "fugg" (little-endian)

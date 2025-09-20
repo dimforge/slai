@@ -1,11 +1,11 @@
 use dashmap::DashMap;
 use slang_hal::backend::{Backend, DeviceValue};
-use stensor::shapes::MatrixOrdering;
-use stensor::tensor::{GpuTensor, GpuTensorView, GpuTensorViewMut};
 use std::any::{Any, TypeId};
 use std::marker::PhantomData;
 use std::ops::{Deref, DerefMut};
 use std::sync::Arc;
+use stensor::shapes::MatrixOrdering;
+use stensor::tensor::{GpuTensor, GpuTensorView, GpuTensorViewMut};
 use wgpu::BufferUsages;
 // HACK: this is a last-minute workaround to keep tensors alive so they don’t get freed before
 //       the pipeline runs when using the `LlmContext`. Need to revisit this after the conference.

@@ -63,10 +63,10 @@ impl<B: Backend> SoftMax<B> {
 mod test {
     use crate::ops::SoftMax;
     use nalgebra::DVector;
-    use slang_hal::backend::WebGpu;
-    use slang_hal::backend::{Backend, Encoder};
     #[cfg(feature = "cuda")]
     use slang_hal::backend::Cuda;
+    use slang_hal::backend::WebGpu;
+    use slang_hal::backend::{Backend, Encoder};
     use slang_hal::re_exports::minislang::SlangCompiler;
     use slang_hal::Shader;
     use stensor::shapes::ViewShapeBuffers;

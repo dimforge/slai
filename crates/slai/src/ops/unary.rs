@@ -294,10 +294,10 @@ impl<B: Backend> Unary<B> {
 mod test {
     use crate::ops::UnaryOp;
     use nalgebra::{DVector, Vector4};
-    use slang_hal::backend::WebGpu;
-    use slang_hal::backend::{Backend, Encoder};
     #[cfg(feature = "cuda")]
     use slang_hal::backend::Cuda;
+    use slang_hal::backend::WebGpu;
+    use slang_hal::backend::{Backend, Encoder};
     use slang_hal::re_exports::minislang::SlangCompiler;
     use slang_hal::Shader;
     use stensor::shapes::ViewShapeBuffers;
