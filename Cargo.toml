@@ -1,9 +1,8 @@
 [workspace]
 members = [
     "crates/slai",
-#    "crates/slai-bench",
+    #    "crates/slai-bench",
     "crates/slai-chat",
-    "crates/slai-chat"
 ]
 resolver = "2"
 
@@ -19,7 +18,7 @@ encase = { version = "0.11.0", features = ["nalgebra"] }
 
 [workspace.lints]
 rust.unexpected_cfgs = { level = "warn", check-cfg = [
-    'cfg(feature, values("dim2", "dim3"))'
+    'cfg(feature, values("dim2", "dim3"))',
 ] }
 
 [profile.release]
@@ -36,7 +35,13 @@ inherits = "dev"
 inherits = "dev"
 
 [patch.crates-io]
-#slang-hal-derive = { path = "../slang-hal/crates/slang-hal-derive" }
-#slang-hal = { path = "../slang-hal/crates/slang-hal" }
-#minislang = { path = "../slang-hal/crates/minislang" }
-#stensor = { path = "../stensor" }
+# slang-hal-derive = { path = "../slang-hal/crates/slang-hal-derive" }
+# slang-hal = { path = "../slang-hal/crates/slang-hal" }
+# minislang = { path = "../slang-hal/crates/minislang" }
+# stensor = { path = "../stensor" }
+slang-hal-derive = { git = "https://github.com/vrixyz/slang-hal.git", branch = "static_build" }
+slang-hal = { git = "https://github.com/vrixyz/slang-hal.git", branch = "static_build" }
+minislang = { git = "https://github.com/vrixyz/slang-hal.git", branch = "static_build" }
+shader-slang = { git = "https://github.com/Vrixyz/slang-rs.git", branch = "static-build", default-features = false, features = [
+    "static",
+] }
