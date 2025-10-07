@@ -42,6 +42,3 @@ inherits = "dev"
 slang-hal-derive = { git = "https://github.com/vrixyz/slang-hal.git", branch = "static_build" }
 slang-hal = { git = "https://github.com/vrixyz/slang-hal.git", branch = "static_build" }
 minislang = { git = "https://github.com/vrixyz/slang-hal.git", branch = "static_build" }
-shader-slang = { git = "https://github.com/Vrixyz/slang-rs.git", branch = "static-build", default-features = false, features = [
-    "static",
-] }
