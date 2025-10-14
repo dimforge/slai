@@ -11,12 +11,12 @@ default = ["web"]
 web = ["dioxus/web"]
 desktop = ["dioxus/desktop"]
 mobile = ["dioxus/mobile"]
-cuda = [ "slai/cuda" ]
-comptime_checks = [ "slai/comptime_checks" ]
+cuda = ["slai/cuda"]
+comptime_checks = ["slai/comptime_checks"]
 
 [dependencies]
 slang-hal = "0.1"
-slai = {  version = "0.1", path = "../slai" }
+slai = { version = "0.1", path = "../slai" }
 
 nalgebra = "0.34"
 async-channel = "2"
@@ -54,4 +54,3 @@ colored = "3.0.0"
 # web:
 [target.'cfg(target_arch = "wasm32")'.dependencies]
 wasm-bindgen-futures = "0.4"
-
