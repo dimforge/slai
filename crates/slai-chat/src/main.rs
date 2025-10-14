@@ -3,7 +3,6 @@ use crate::cli::Cli;
 use crate::llm::ChatLlm;
 use crate::prompt::Prompt;
 use crate::sampler::SamplerParams;
-use async_std::sync::RwLock;
 use components::{Chat, Home};
 use dioxus::prelude::*;
 use slang_hal::backend::Backend;

@@ -437,18 +437,16 @@ fn submit_prompt<B: Backend>(
     let gpu = gpu.clone();
     let llm = model.llm.clone();
     execute(async move {
-        llm
-            .forward(
-                &gpu.backend,
-                prompt,
-                sampler,
-                chat_template,
-                next_pos,
-                |msg| {
-                    Ok(out.unbounded_send(msg)?)
-                })
-            .await
-            .unwrap()
+        llm.forward(
+            &gpu.backend,
+            prompt,
+            sampler,
+            chat_template,
+            next_pos,
+            |msg| Ok(out.unbounded_send(msg)?),
+        )
+        .await
+        .unwrap()
     });
 }
 
