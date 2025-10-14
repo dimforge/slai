@@ -5,10 +5,17 @@ This is a basic chat interface for testing **slai**. Currently only supports:
 - Qwen 2.
 - Segment Anything.
 
-In order to compile and run `slai-chat`, be sure to define the `SLANG_DIR` environment variable:
-1. Download the Slang compiler libraries for your platform: https://github.com/shader-slang/slang/releases/tag/v2025.16
-2. Unzip the downloaded directory, and use its path as value to the `SLANG_DIR` environment variable: `SLANG_DIR=/path/to/slang`.
+In order to compile and run `slai-chat`, be sure to define the `SLANG_DIR` environment variable.
+
+Either:
+
+- Run the script at the root of slai repository: `SLANG_DIR=$(./download_slang.sh | grep '^SLANG_DIR=' | cut -d'=' -f2-)`
+- Or manually:
+  1. Download the Slang compiler libraries for your platform: https://github.com/shader-slang/slang/releases/tag/v2025.16
+  2. Unzip the downloaded directory, and use its path as value to the `SLANG_DIR` environment variable: `SLANG_DIR=/path/to/slang`.
    Note that the variable must point to the root of the slang installation (i.e. the directory that contains `bin` and `lib`).
+
+
 
 To run the GUI natively:
 ```bash

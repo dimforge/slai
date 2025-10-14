@@ -178,10 +178,7 @@ impl<B: Backend> ChatLlama2<B> {
         // Run the transformer.
         let mut encoder = backend.begin_encoding();
         backend.write_buffer(state.rope_config_mut().buffer_mut(), &[rope_config])?;
-        backend.write_buffer(
-            state.rms_norm_config_mut().buffer_mut(),
-            &[rms_norm_config],
-        )?;
+        backend.write_buffer(state.rms_norm_config_mut().buffer_mut(), &[rms_norm_config])?;
         backend.write_buffer(state.attn_params_mut().buffer_mut(), &[attn_params])?;
         state
             .x
