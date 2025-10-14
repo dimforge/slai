@@ -12,10 +12,9 @@ In order to compile and run `slai-chat`, be sure to define the `SLANG_DIR` envir
 2. Unzip the downloaded directory, and use its path as value to the `SLANG_DIR` environment variable: `SLANG_DIR=/path/to/slang`.
    Note that the variable must point to the root of the slang installation (i.e. the directory that contains `bin` and `lib`).
 
-More environment variables are needed because we link statically slang and its dependencies:
+1 more environment variables is needed because we link statically slang and its dependencies:
 
 1. `SLANG_EXTERNAL_DIR`: typically set to '[<slang_source_directory>](https://github.com/shader-slang/slang)/build/external'
-2. `LIBSTDCPP_PATH`: to link with libstdc++.
 
 To run the GUI natively:
 
