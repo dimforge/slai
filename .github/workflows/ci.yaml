@@ -47,16 +47,15 @@ jobs:
         with:
           path: |
             ~/.cache/slang  # Matches script's default OUTPUT_DIR
-          key: slang-2025.18.2-${{ runner.os }}-${{ runner.arch }}
+          key: slang-v$SLANG_TAG-${{ runner.os }}-${{ runner.arch }}
 
       - name: Setup Slang
         id: setup
         run: |
-          echo "version=${{ env.SLANG_TAG }}" >> $GITHUB_OUTPUT  # Output for cache key
-          ./download_slang.sh --version ${{ env.SLANG_TAG }}
-          SLANG_DIR=$(./download_slang.sh --version ${{ env.SLANG_TAG }} | grep '^SLANG_DIR=' | cut -d'=' -f2-)
+          echo "version=$SLANG_TAG" >> $GITHUB_OUTPUT  # Output for cache key
+          SLANG_DIR=$(./download_slang.sh --version $SLANG_TAG | grep '^SLANG_DIR=' | cut -d'=' -f2-)
           echo "slang-dir=$SLANG_DIR" >> $GITHUB_OUTPUT  # Output for dependents
-          echo "slang-cache-key=slang-v${{ env.SLANG_TAG }}-${{ runner.os }}-${{ runner.arch }}" >> $GITHUB_OUTPUT
+          echo "slang-cache-key=slang-v$SLANG_TAG-${{ runner.os }}-${{ runner.arch }}" >> $GITHUB_OUTPUT
           echo "SLANG_DIR=$SLANG_DIR" >> $GITHUB_ENV  # For this job if needed
 
       - name: Save Slang Cache
@@ -74,8 +73,6 @@ jobs:
       SLANG_DIR: ${{ needs.setup-slang.outputs.slang-dir }}
     timeout-minutes: 30
     steps:
-      - run: echo "(env) SLANG_DIR=${{ env.SLANG_DIR }}"
-      - run: echo $SLANG_DIR
       - name: Checkout repository
         uses: actions/checkout@v4
 
@@ -99,7 +96,7 @@ jobs:
           sweep-cache: true
 
       - name: Run clippy lints
-        run: SLANG_DIR=${{ env.SLANG_DIR }} cargo clippy --locked --workspace --all-targets --all-features -- --deny warnings
+        run: SLANG_DIR=$SLANG_DIR cargo clippy --locked --workspace --all-targets --all-features -- --deny warnings
 
   # Check documentation.
   doc:
@@ -131,7 +128,7 @@ jobs:
           sweep-cache: true
 
       - name: Check documentation
-        run: SLANG_DIR=${{ env.SLANG_DIR }} cargo doc --locked --workspace --all-features --document-private-items --no-deps
+        run: SLANG_DIR=$SLANG_DIR cargo doc --locked --workspace --all-features --document-private-items --no-deps
     # Testing.
   test:
     needs: setup-slang # Depends on setup-slang
@@ -162,4 +159,4 @@ jobs:
           sweep-cache: true
       - name: Run Cargo Tests
         run: |
-          SLANG_DIR=${{ env.SLANG_DIR }} cargo test --verbose
+          SLANG_DIR=$SLANG_DIR cargo test --verbose

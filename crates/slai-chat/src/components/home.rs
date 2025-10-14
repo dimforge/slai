@@ -1,7 +1,6 @@
 use crate::chat_template::ChatTemplate;
 use crate::llm::ChatLlm;
 use crate::{GgufMetadata, GpuInstanceCtx, LoadedModel, LoadedModelSignal, SelectedBackend};
-use async_std::sync::RwLock;
 use dioxus::prelude::*;
 use dioxus_markdown::Markdown;
 use rfd::FileHandle;
