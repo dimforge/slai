@@ -32,7 +32,7 @@ jobs:
   setup-slang:
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest]
+        os: [ubuntu-latest]
     runs-on: ${{ matrix.os }}
     outputs:
       slang-dir: ${{ steps.setup.outputs.slang-dir }} # Pass SLANG_DIR to dependent jobs
