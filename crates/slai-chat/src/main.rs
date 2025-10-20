@@ -160,7 +160,7 @@ fn App() -> Element {
     match (&*gpu_wgpu.read_unchecked(), &*gpu_cuda.read_unchecked()) {
         (Some(Ok(gpu_wgpu)), Some(Ok(gpu_cuda))) => {
             use_context_provider(|| gpu_wgpu.clone());
-            use_context_provider(|| gpu_cuda.clone());
+            use_context_provider(|| *gpu_cuda);
             use_context_provider(|| LoadedModelSignal::new(None));
             use_context_provider(|| Signal::new(PromptState::default()));
 
