@@ -14,7 +14,8 @@ usage() {
     echo "  --os: Target OS (default: auto-detect from current platform)"
     echo "  --output-dir: Directory to extract Slang (default: ~/.cache/slang)"
     echo "  --version: Slang version (e.g., 2025.18.2, default: latest)"
-    echo "Example: $0 --os linux --output-dir /tmp/slang"
+    echo "  --slang-dir-name: Custom name for the Slang directory (default: slang-v<version>-<os>)"
+    echo "Example: $0 --os linux --output-dir /tmp/slang --version 2025.18.2 --slang-dir-name my-slang-2025.18.2-linux"
 }
 
 # Parse arguments
@@ -23,6 +24,7 @@ while [[ "$#" -gt 0 ]]; do
         --os) OS="$2"; shift ;;
         --output-dir) export OUTPUT_DIR="$2"; shift ;;
         --version) export SLANG_VERSION="$2"; shift ;;
+        --slang-dir-name) SLANG_DIR_NAME="$2"; shift ;;
         *) usage ; exit 1 ;;
     esac
     shift
@@ -66,8 +68,14 @@ if [[ -z "$SLANG_VERSION" ]]; then
     exit 1
 fi
 
+# Set up paths - use custom name if provided, otherwise use default
+if [[ -z "$SLANG_DIR_NAME" ]]; then
+    SLANG_DIR_NAME="slang-v$SLANG_VERSION-$OS"
+fi
+
+
 # Set up paths
-SLANG_DIR="$OUTPUT_DIR/slang-v$SLANG_VERSION-$OS"
+SLANG_DIR="$OUTPUT_DIR/$SLANG_DIR_NAME"
 ZIP_URL="$SLANG_URL_BASE/$SLANG_TAG/slang-$SLANG_VERSION-$ASSET_SUFFIX"
 TEMP_ZIP="/tmp/slang-$SLANG_VERSION.zip"
 
