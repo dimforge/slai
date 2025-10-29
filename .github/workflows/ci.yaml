@@ -29,48 +29,61 @@ jobs:
 
       - name: Run cargo fmt
         run: cargo fmt --all -- --check
-  setup-slang:
-    strategy:
-      matrix:
-        os: [ubuntu-latest]
-    runs-on: ${{ matrix.os }}
+  setup-slang-macos:
+    runs-on: macos-latest
     outputs:
-      slang-dir: ${{ steps.setup.outputs.slang-dir }} # Pass SLANG_DIR to dependent jobs
-      slang-cache-key: ${{ steps.setup.outputs.slang-cache-key }} # Pass SLANG_DIR to dependent jobs
+      slang-dir: ${{ steps.output-env.outputs.slang-dir }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - uses: actions/cache@v4
+        id: cache-slang
+        with:
+          path: ~/.cache/slang/slang-v${{ env.SLANG_TAG }}-macos
+          key: slang-v${{ env.SLANG_TAG }}-macos
+      - name: Download slang
+        if: steps.cache-slang.outputs.cache-hit != 'true' # Only download on miss
+        id: setup
+        run: |
+          SLANG_DIR=$(./download_slang.sh --os macos-aarch64 --version $SLANG_TAG | grep '^SLANG_DIR=' | cut -d'=' -f2-)
+      - name: set output
+        id: output-env
+        run: |
+          echo "slang-dir=/Users/runner/.cache/slang/slang-v${{ env.SLANG_TAG }}-macos" >> $GITHUB_OUTPUT
+  setup-slang-linux:
+    runs-on: ubuntu-latest
+    outputs:
+      slang-dir: ${{ steps.output-env.outputs.slang-dir }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Cache Slang
+      - uses: actions/cache@v4
         id: cache-slang
-        uses: actions/cache/restore@v4 # Restore first
         with:
-          path: |
-            ~/.cache/slang  # Matches script's default OUTPUT_DIR
-          key: slang-v$SLANG_TAG-${{ runner.os }}-${{ runner.arch }}
+          path: /home/runner/.cache/slang/slang-v${{ env.SLANG_TAG }}-linux
+          key: slang-v${{ env.SLANG_TAG }}-linux
 
       - name: Setup Slang
+        if: steps.cache-slang.outputs.cache-hit != 'true' # Only download on miss
         id: setup
         run: |
           echo "version=$SLANG_TAG" >> $GITHUB_OUTPUT  # Output for cache key
-          SLANG_DIR=$(./download_slang.sh --version $SLANG_TAG | grep '^SLANG_DIR=' | cut -d'=' -f2-)
-          echo "slang-dir=$SLANG_DIR" >> $GITHUB_OUTPUT  # Output for dependents
-          echo "slang-cache-key=slang-v$SLANG_TAG-${{ runner.os }}-${{ runner.arch }}" >> $GITHUB_OUTPUT
-          echo "SLANG_DIR=$SLANG_DIR" >> $GITHUB_ENV  # For this job if needed
-
-      - name: Save Slang Cache
-        if: steps.cache-slang.outputs.cache-hit != 'true' # Only save on miss
-        uses: actions/cache/save@v4
-        with:
-          path: ~/.cache/slang
-          key: ${{ steps.setup.outputs.slang-cache-key }}
+          ## linux
+          SLANG_DIR=$(./download_slang.sh --os linux --version $SLANG_TAG | grep '^SLANG_DIR=' | cut -d'=' -f2-)
+          echo "slang-dir=$SLANG_DIR" >> $GITHUB_OUTPUT
+      - name: set output
+        id: output-env
+        run: |
+          echo "slang-dir=/home/runner/.cache/slang/slang-v${{ env.SLANG_TAG }}-linux" >> $GITHUB_OUTPUT
   # Run clippy lints.
   clippy:
-    needs: setup-slang # Depends on setup-slang
+    needs: setup-slang-linux # Depends on setup-slang
     name: Clippy
     runs-on: ubuntu-latest
     env:
-      SLANG_DIR: ${{ needs.setup-slang.outputs.slang-dir }}
+      SLANG_DIR: ${{ needs.setup-slang-linux.outputs.slang-dir }}
+      SLANG_CACHE_KEY: slang-v2025.18.2-linux
     timeout-minutes: 30
     steps:
       - name: Checkout repository
@@ -87,8 +100,8 @@ jobs:
       - name: Retrieve Cache for Slang
         uses: actions/cache/restore@v4
         with:
-          path: ~/.cache/slang
-          key: ${{ needs.setup-slang.outputs.slang-cache-key }}
+          path: ~/.cache/slang/slang-v${{ env.SLANG_TAG }}-linux
+          key: slang-v${{ env.SLANG_TAG }}-linux
 
       - name: Populate target directory from cache
         uses: Leafwing-Studios/cargo-cache@v2
@@ -100,12 +113,13 @@ jobs:
 
   # Check documentation.
   doc:
-    needs: setup-slang # Depends on setup-slang
+    needs: setup-slang-linux # Depends on setup-slang
     name: Docs
     runs-on: ubuntu-latest
     timeout-minutes: 30
     env:
-      SLANG_DIR: ${{ needs.setup-slang.outputs.slang-dir }}
+      SLANG_DIR: ${{ needs.setup-slang-linux.outputs.slang-dir }}
+      SLANG_CACHE_KEY: slang-v2025.18.2-linux
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -119,8 +133,8 @@ jobs:
       - name: Retrieve Cache for Slang
         uses: actions/cache/restore@v4
         with:
-          path: ~/.cache/slang
-          key: ${{ needs.setup-slang.outputs.slang-cache-key }}
+          path: ~/.cache/slang/slang-v${{ env.SLANG_TAG }}-linux
+          key: ${{ env.SLANG_CACHE_KEY }}
 
       - name: Populate target directory from cache
         uses: Leafwing-Studios/cargo-cache@v2
@@ -129,30 +143,53 @@ jobs:
 
       - name: Check documentation
         run: SLANG_DIR=$SLANG_DIR cargo doc --locked --workspace --features web,desktop,mobile,comptime_checks --document-private-items --no-deps
-    # Testing.
-  test:
-    needs: setup-slang # Depends on setup-slang
-    name: Tests
+  # Testing.
+  test-linux:
+    needs: setup-slang-linux
+    name: Tests (linux)
     runs-on: ubuntu-latest
-    timeout-minutes: 30
     env:
-      SLANG_DIR: ${{ needs.setup-slang.outputs.slang-dir }}
+      SLANG_DIR: ${{ needs.setup-slang-linux.outputs.slang-dir }}
+      SLANG_CACHE_KEY: slang-v2025.18.2-linux
+    timeout-minutes: 30
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@stable
-
       - name: Install dependencies
         run: sudo apt-get update; sudo apt-get install --no-install-recommends libwebkit2gtk-4.1-dev build-essential curl wget file libxdo-dev libssl-dev libayatana-appindicator3-dev librsvg2-dev
-
       - name: Retrieve Cache for Slang
         uses: actions/cache/restore@v4
         with:
-          path: ~/.cache/slang
-          key: ${{ needs.setup-slang.outputs.slang-cache-key }}
+          path: /home/runner/.cache/slang/slang-v${{ env.SLANG_TAG }}-linux
+          key: ${{ env.SLANG_CACHE_KEY }}
 
+      - name: Populate target directory from cache
+        uses: Leafwing-Studios/cargo-cache@v2
+        with:
+          sweep-cache: true
+      - name: Run Cargo Tests
+        run: |
+          SLANG_DIR=$SLANG_DIR cargo test --verbose
+  test-macos:
+    needs: setup-slang-macos
+    name: Tests (macos)
+    runs-on: macos-latest
+    env:
+      SLANG_DIR: ${{ needs.setup-slang-macos.outputs.slang-dir }}
+      SLANG_CACHE_KEY: slang-v2025.18.2-macos
+    timeout-minutes: 30
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+      - name: Retrieve Cache for Slang
+        uses: actions/cache/restore@v4
+        with:
+          path: /Users/runner/.cache/slang/slang-v${{ env.SLANG_TAG }}-macos
+          key: ${{ env.SLANG_CACHE_KEY }}
       - name: Populate target directory from cache
         uses: Leafwing-Studios/cargo-cache@v2
         with:
