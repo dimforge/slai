@@ -24,7 +24,7 @@ pub fn main() {
     let out_dir = Path::new(&out_dir);
     let autogen_target = out_dir.join("autogen");
 
-    for (target, ext) in targets {
+    for (target, _ext) in targets {
         std::fs::create_dir_all(&autogen_target).unwrap();
         slang.compile_all(target, "./shaders", &autogen_target, &[]);
     }

@@ -2,41 +2,17 @@ name: CI
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   pull_request:
-    branches: [ main ]
+    branches: [main]
 
 env:
   CARGO_TERM_COLOR: always
   RUSTFLAGS: --deny warnings
   RUSTDOCFLAGS: --deny warnings
+  SLANG_TAG: 2025.18.2
 
 jobs:
-  # Run clippy lints.
-  clippy:
-    name: Clippy
-    runs-on: ubuntu-latest
-    timeout-minutes: 30
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Install Rust toolchain
-        uses: dtolnay/rust-toolchain@stable
-        with:
-          components: clippy
-
-      - name: Install dependencies
-        run: sudo apt-get update; sudo apt-get install --no-install-recommends libwebkit2gtk-4.1-dev build-essential curl wget file libxdo-dev libssl-dev libayatana-appindicator3-dev librsvg2-dev
-
-      - name: Populate target directory from cache
-        uses: Leafwing-Studios/cargo-cache@v2
-        with:
-          sweep-cache: true
-
-      - name: Run clippy lints
-        run: cargo clippy --locked --workspace --all-targets --all-features -- --deny warnings
-
   # Check formatting.
   format:
     name: Format
@@ -53,12 +29,73 @@ jobs:
 
       - name: Run cargo fmt
         run: cargo fmt --all -- --check
+  setup-slang:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        include:
+          - os-id: linux
+            os: ubuntu-latest
+          - os-id: macos-aarch64
+            os: macos-latest
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - uses: actions/cache@v4
+        id: cache-slang
+        with:
+          path: ~/.cache/slang/slang-v${{ env.SLANG_TAG }}-${{ matrix.os-id }}
+          key: slang-v${{ env.SLANG_TAG }}-${{ matrix.os-id }}
+      - name: Download slang
+        if: steps.cache-slang.outputs.cache-hit != 'true' # Only download on miss
+        id: setup
+        run: |
+          ./download_slang.sh --os ${{ matrix.os-id }} --version $SLANG_TAG
+  # Run clippy lints.
+  clippy:
+    needs: setup-slang # Depends on setup-slang
+    name: Clippy
+    runs-on: ubuntu-latest
+    env:
+      SLANG_DIR: /home/runner/.cache/slang/slang-v2025.18.2-linux
+      SLANG_CACHE_KEY: slang-v2025.18.2-linux
+    timeout-minutes: 30
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy
+
+      - name: Install dependencies
+        run: sudo apt-get update; sudo apt-get install --no-install-recommends libwebkit2gtk-4.1-dev build-essential curl wget file libxdo-dev libssl-dev libayatana-appindicator3-dev librsvg2-dev
+
+      - name: Retrieve Cache for Slang
+        uses: actions/cache/restore@v4
+        with:
+          path: ~/.cache/slang/slang-v${{ env.SLANG_TAG }}-linux
+          key: slang-v${{ env.SLANG_TAG }}-linux
+
+      - name: Populate target directory from cache
+        uses: Leafwing-Studios/cargo-cache@v2
+        with:
+          sweep-cache: true
+
+      - name: Run clippy lints
+        run: SLANG_DIR=$SLANG_DIR cargo clippy --locked --workspace --all-targets --features web,desktop,mobile,comptime_checks -- --deny warnings
 
   # Check documentation.
   doc:
+    needs: setup-slang # Depends on setup-slang
     name: Docs
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    env:
+      SLANG_DIR: /home/runner/.cache/slang/slang-v2025.18.2-linux
+      SLANG_CACHE_KEY: slang-v2025.18.2-linux
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -69,10 +106,60 @@ jobs:
       - name: Install dependencies
         run: sudo apt-get update; sudo apt-get install --no-install-recommends libwebkit2gtk-4.1-dev build-essential curl wget file libxdo-dev libssl-dev libayatana-appindicator3-dev librsvg2-dev
 
+      - name: Retrieve Cache for Slang
+        uses: actions/cache/restore@v4
+        with:
+          path: ~/.cache/slang/slang-v${{ env.SLANG_TAG }}-linux
+          key: ${{ env.SLANG_CACHE_KEY }}
+
       - name: Populate target directory from cache
         uses: Leafwing-Studios/cargo-cache@v2
         with:
           sweep-cache: true
 
       - name: Check documentation
-        run: cargo doc --locked --workspace --all-features --document-private-items --no-deps
+        run: SLANG_DIR=$SLANG_DIR cargo doc --locked --workspace --features web,desktop,mobile,comptime_checks --document-private-items --no-deps
+  # Testing.
+  testing:
+    needs: setup-slang
+    name: Tests
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        include:
+          - slang-dir: /home/runner/.cache/slang/slang-v2025.18.2-linux
+            os: ubuntu-latest
+          - slang-dir: /Users/runner/.cache/slang/slang-v2025.18.2-macos-aarch64
+            os: macos-latest
+          - slang-cache-key: slang-v2025.18.2-linux
+            os: ubuntu-latest
+          - slang-cache-key: slang-v2025.18.2-macos-aarch64
+            os: macos-latest
+    runs-on: ${{ matrix.os }}
+    env:
+      SLANG_DIR: ${{ matrix.slang-dir }}
+      SLANG_CACHE_KEY: ${{ matrix.slang-cache-key }}
+    timeout-minutes: 30
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+      - name: Install dependencies
+        if: ${{ runner.os == 'linux' }}
+        run: sudo apt-get update; sudo apt-get install --no-install-recommends libwebkit2gtk-4.1-dev build-essential curl wget file libxdo-dev libssl-dev libayatana-appindicator3-dev librsvg2-dev
+      - name: Retrieve Cache for Slang
+        uses: actions/cache/restore@v4
+        with:
+          fail-on-cache-miss: true
+          path: ~/.cache/slang/${{ matrix.slang-cache-key }}
+          key: ${{ matrix.slang-cache-key }}
+
+      - name: Populate target directory from cache
+        uses: Leafwing-Studios/cargo-cache@v2
+        with:
+          sweep-cache: true
+      - name: Run Cargo Tests
+        run: |
+          SLANG_DIR=$SLANG_DIR cargo test --verbose
