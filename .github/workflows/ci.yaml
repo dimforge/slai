@@ -31,8 +31,6 @@ jobs:
         run: cargo fmt --all -- --check
   setup-slang-macos:
     runs-on: macos-latest
-    outputs:
-      slang-dir: ${{ steps.output-env.outputs.slang-dir }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -45,15 +43,9 @@ jobs:
         if: steps.cache-slang.outputs.cache-hit != 'true' # Only download on miss
         id: setup
         run: |
-          SLANG_DIR=$(./download_slang.sh --os macos-aarch64 --version $SLANG_TAG | grep '^SLANG_DIR=' | cut -d'=' -f2-)
-      - name: set output
-        id: output-env
-        run: |
-          echo "slang-dir=/Users/runner/.cache/slang/slang-v${{ env.SLANG_TAG }}-macos" >> $GITHUB_OUTPUT
+          ./download_slang.sh --os macos-aarch64 --version $SLANG_TAG
   setup-slang-linux:
     runs-on: ubuntu-latest
-    outputs:
-      slang-dir: ${{ steps.output-env.outputs.slang-dir }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -64,25 +56,20 @@ jobs:
           path: /home/runner/.cache/slang/slang-v${{ env.SLANG_TAG }}-linux
           key: slang-v${{ env.SLANG_TAG }}-linux
 
-      - name: Setup Slang
+      - name: Download slang
         if: steps.cache-slang.outputs.cache-hit != 'true' # Only download on miss
         id: setup
         run: |
           echo "version=$SLANG_TAG" >> $GITHUB_OUTPUT  # Output for cache key
           ## linux
-          SLANG_DIR=$(./download_slang.sh --os linux --version $SLANG_TAG | grep '^SLANG_DIR=' | cut -d'=' -f2-)
-          echo "slang-dir=$SLANG_DIR" >> $GITHUB_OUTPUT
-      - name: set output
-        id: output-env
-        run: |
-          echo "slang-dir=/home/runner/.cache/slang/slang-v${{ env.SLANG_TAG }}-linux" >> $GITHUB_OUTPUT
+          ./download_slang.sh --os linux --version $SLANG_TAG
   # Run clippy lints.
   clippy:
     needs: setup-slang-linux # Depends on setup-slang
     name: Clippy
     runs-on: ubuntu-latest
     env:
-      SLANG_DIR: ${{ needs.setup-slang-linux.outputs.slang-dir }}
+      SLANG_DIR: /home/runner/.cache/slang/slang-v2025.18.2-linux
       SLANG_CACHE_KEY: slang-v2025.18.2-linux
     timeout-minutes: 30
     steps:
@@ -118,7 +105,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     env:
-      SLANG_DIR: ${{ needs.setup-slang-linux.outputs.slang-dir }}
+      SLANG_DIR: /home/runner/.cache/slang/slang-v2025.18.2-linux
       SLANG_CACHE_KEY: slang-v2025.18.2-linux
     steps:
       - name: Checkout repository
@@ -149,7 +136,7 @@ jobs:
     name: Tests (linux)
     runs-on: ubuntu-latest
     env:
-      SLANG_DIR: ${{ needs.setup-slang-linux.outputs.slang-dir }}
+      SLANG_DIR: /home/runner/.cache/slang/slang-v2025.18.2-linux
       SLANG_CACHE_KEY: slang-v2025.18.2-linux
     timeout-minutes: 30
     steps:
@@ -177,7 +164,7 @@ jobs:
     name: Tests (macos)
     runs-on: macos-latest
     env:
-      SLANG_DIR: ${{ needs.setup-slang-macos.outputs.slang-dir }}
+      SLANG_DIR: /Users/runner/.cache/slang/slang-v2025.18.2-macos
       SLANG_CACHE_KEY: slang-v2025.18.2-macos
     timeout-minutes: 30
     steps:
